@@ -8,9 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="링크보관함">
 <title>링크 보관함</title>
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
 <style>
   :root{
     --bg:#0f1115; --bg2:#161922; --card:#1c2029; --card2:#232834;
@@ -20,16 +21,18 @@
     --fs:16px; --r:16px;
     --safe-b:env(safe-area-inset-bottom,0px);
     --safe-t:env(safe-area-inset-top,0px);
+    --font:'Pretendard','Pretendard Variable',-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
   html,body{height:100%}
   body{
     background:var(--bg);
     background-image:radial-gradient(120% 80% at 50% -10%, #1a1f2b 0%, var(--bg) 55%);
-    color:var(--txt); font-family:'Outfit',sans-serif; font-size:var(--fs);
+    color:var(--txt); font-family:var(--font); font-size:var(--fs);
     -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    letter-spacing:-.01em;
   }
-  .ko{font-family:'Gowun Dodum',sans-serif}
+  .ko{font-family:var(--font)}
 
   /* ===== Header ===== */
   header{
@@ -45,8 +48,8 @@
     display:grid;place-items:center;font-size:18px;
     box-shadow:0 4px 14px rgba(255,138,76,.35);
   }
-  h1{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}
-  h1 small{display:block;font-size:.66rem;color:var(--dim);font-weight:500}
+  h1{font-size:1.2rem;font-weight:700;letter-spacing:-.03em}
+  h1 small{display:block;font-size:.66rem;color:var(--dim);font-weight:500;letter-spacing:-.01em}
   .ver{margin-left:auto;font-size:.64rem;color:var(--accent);background:rgba(255,180,84,.12);padding:4px 9px;border-radius:20px;border:1px solid rgba(255,180,84,.3);font-weight:600;cursor:pointer}
   .menu-btn{background:var(--card);border:1px solid var(--line);color:var(--sub);width:34px;height:34px;border-radius:10px;font-size:1.1rem;cursor:pointer;flex:none}
 
@@ -173,7 +176,7 @@
   <div class="title-row">
     <div class="logo">🔖</div>
     <h1>링크 보관함<small class="ko">주제별로 모아 한눈에</small></h1>
-    <span class="ver" id="ver" onclick="openMenu()">v2.1</span>
+    <span class="ver" id="ver" onclick="openMenu()">v2.2</span>
   </div>
   <div class="search">
     <span class="ic">🔍</span>
@@ -237,7 +240,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v2.1';
+const VERSION='v2.2';
 const DB_KEY='linkvault_v2', TOPIC_KEY='linkvault_topics_v2';
 let items=[], topics=[], editId=null, curType='site', curTopic=null;
 let view={topic:'all', kind:'all', star:false, q:''};
@@ -254,6 +257,13 @@ function load(){
 }
 const save=()=>localStorage.setItem(DB_KEY,JSON.stringify(items));
 const saveTopics=()=>localStorage.setItem(TOPIC_KEY,JSON.stringify(topics));
+
+/* ---- 공유로 들어온 텍스트에서 URL 추출 ---- */
+function extractUrl(raw){
+  if(!raw) return '';
+  const m=raw.match(/https?:\/\/[^\s]+/i);
+  return m ? m[0].trim() : raw.trim();
+}
 
 /* ---- URL 분석 ---- */
 function analyze(url){
@@ -558,12 +568,30 @@ $('f-url').addEventListener('input',refreshPreview);
 $('f-title').addEventListener('input',function(){this.dataset.touched='1';});
 $('typeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;curType=b.dataset.t;$('typeSeg').dataset.touched='1';paintSeg();});
 $('topicPick').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;curTopic=b.dataset.id||null;paintTopicPick();});
-$('pasteBtn').onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t){$('f-url').value=t.trim();$('f-title').dataset.touched='';$('typeSeg').dataset.touched='';refreshPreview();}else toast('클립보드가 비어있어요');}catch{toast('붙여넣기 권한이 필요해요. 직접 붙여넣어 주세요');}};
+$('pasteBtn').onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t){$('f-url').value=extractUrl(t);$('f-title').dataset.touched='';$('typeSeg').dataset.touched='';refreshPreview();}else toast('클립보드가 비어있어요');}catch{toast('붙여넣기 권한이 필요해요. 직접 붙여넣어 주세요');}};
 $('search').addEventListener('input',function(){view.q=this.value;$('clr').style.display=view.q?'block':'none';render();});
 $('clr').onclick=()=>{$('search').value='';view.q='';$('clr').style.display='none';render();};
 
-/* 공유 진입(?url=) */
-(function(){const p=new URLSearchParams(location.search);const u=p.get('url')||p.get('text');load();render();if(u){openSheet(null);$('f-url').value=u.trim();refreshPreview();}})();
+/* 공유 진입(?url= / ?text= / ?title=) — 유튜브 등에서 '공유 → 링크보관함' */
+(function(){
+  const p=new URLSearchParams(location.search);
+  // 안드로이드 공유는 보통 text에 URL이 담겨오고, title/url에 담기는 경우도 있음
+  const shared = p.get('url') || p.get('text') || p.get('title') || '';
+  const u = extractUrl(shared);
+  load();
+  render();
+  if(u){
+    openSheet(null);
+    $('f-url').value=u;
+    refreshPreview();
+    // 공유로 들어온 흔적 정리 (새로고침 시 시트 다시 안 뜨도록)
+    if(history.replaceState) history.replaceState(null,'',location.pathname);
+  }
+  // PWA 서비스워커 등록 (있으면)
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+})();
 </script>
 </body>
 </html>
