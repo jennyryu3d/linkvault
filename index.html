@@ -114,6 +114,11 @@
   .empty{text-align:center;padding:60px 30px;color:var(--dim)}
   .empty .big{font-size:2.4rem;margin-bottom:12px;opacity:.6}
   .empty p{font-size:.88rem;line-height:1.5}
+  /* 첫 실행(링크 0개) 전용: 화면 가득 크게, 오렌지 강조 */
+  .empty.first{min-height:calc(100vh - 280px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px;color:var(--accent)}
+  .empty.first .big{font-size:4.8rem;opacity:.9;margin-bottom:20px;filter:drop-shadow(0 6px 18px rgba(255,138,76,.35))}
+  .empty.first p{font-size:1.5rem;font-weight:800;line-height:1.45;color:var(--accent);letter-spacing:-.01em}
+  .empty.first .sub{font-size:1.02rem;font-weight:600;color:var(--sub);margin-top:14px;line-height:1.5}
 
   /* ===== FAB + sheet ===== */
   .fab{position:fixed;right:18px;bottom:calc(20px + var(--safe-b));z-index:40;width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),#ff8a4c);color:#1a1207;font-size:1.9rem;font-weight:300;display:grid;place-items:center;box-shadow:0 8px 24px rgba(255,138,76,.45);transition:.2s}
@@ -169,6 +174,86 @@
 
   .toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-b));transform:translate(-50%,20px);background:var(--card2);color:var(--txt);border:1px solid var(--line);padding:11px 20px;border-radius:30px;font-size:.83rem;z-index:60;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:88%;text-align:center}
   .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* ============================================================
+     KRAFTON Dark Theme — 외형만 교체 (구조·기능·JS 그대로)
+     기존 클래스에 직접 매핑. 기존 CSS가 변수 기반이라 색은 자동 반영.
+     ============================================================ */
+  :root{
+    /* 표면 계층: 페이지 < 바 < 카드 < 카드 위 요소 */
+    --bg:#000000;          /* 페이지 바탕 (완전 검정) */
+    --bg2:#101115;         /* 시트/바 토대 */
+    --card:#1b1c20;        /* 카드·입력·검색창 표면 */
+    --card2:#26272c;       /* 카드 위 칩/버튼 */
+    --line:#33343a;        /* 또렷한 보더 */
+    --txt:#ffffff; --sub:#d4d4d4; --dim:#a8a8a8;
+    /* 브랜드 액센트 (오렌지) */
+    --accent:#ffb454; --accent2:#4c7df0; --star:#ffce4d;
+    /* 종류별 색: 영상=빨강 / 사이트=파랑 / 이미지=초록 / 기타=회색 */
+    --vid:#ff6b6b; --site:#4c7df0; --img:#34b36b; --etc:#9aa0a6;
+    --r:13px;
+  }
+  /* 검정 바탕 — 기존 그라데이션 제거 */
+  body{background:#000000 !important;background-image:none !important;letter-spacing:-.01em}
+
+  /* 로고 타일: 그라데이션 → KRAFTON 단색 빨강 */
+  .logo{background:var(--accent) !important;box-shadow:0 6px 18px rgba(255,138,76,.35) !important}
+  h1{font-weight:800}
+  /* 버전 배지: 빨강 외곽선 */
+  .ver{color:var(--accent);background:transparent;border-color:var(--accent)}
+
+  /* 검색창 */
+  .search input{background:var(--card);border-color:var(--line)}
+
+  /* 주제 버튼: 카드 위 칩 느낌 + 활성시 빨강 */
+  .topic{background:var(--card2);color:var(--txt);border-color:var(--line);box-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .topic.on{background:var(--accent);color:#1a1207;border-color:var(--accent);box-shadow:0 4px 12px rgba(255,138,76,.32)}
+  .topic.star.on{background:var(--star);color:#2a1f00;border-color:var(--star)}
+  .topic.add{color:var(--accent2);border-style:dashed;background:transparent}
+
+  /* 종류 필터: 투명 배경, 활성시 흰 반투명 */
+  .kind{background:transparent;color:var(--sub);border-color:var(--line)}
+  .kind.on[data-k="all"]{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+
+  /* 섹션 헤더 개수 배지 */
+  .sec-cnt{background:var(--card2);border-color:var(--line);color:var(--dim)}
+
+  /* 카드: 또렷한 표면 + 그림자, 좌측 accent 막대 살짝 더 굵게 */
+  .item{background:var(--card);border-color:var(--line);box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 24px rgba(0,0,0,.45)}
+  .it-title{font-weight:700}
+  .thumb{background:linear-gradient(150deg,#1c1b1a,#0c0c0d)}
+  /* 카드 하단 액션: 상단 구분선 추가 */
+  .row-actions{border-top:1px solid var(--line);padding-top:7px;gap:2px}
+  .mini{background:transparent;border:none;color:var(--dim)}
+  .mini.del{color:var(--dim)}
+  /* 태그: accent 톤 */
+  .tg{color:var(--accent2);background:rgba(76,125,240,.15)}
+  .item.video .tg{color:var(--vid);background:rgba(255,107,107,.14)}
+  .item.image .tg{color:var(--img);background:rgba(52,179,107,.15)}
+
+  /* FAB: 둥근 사각 + 빨강 그라데이션 */
+  .fab{border-radius:18px;background:linear-gradient(135deg,var(--accent),#ff8a4c);color:#1a1207;box-shadow:0 8px 24px rgba(255,138,76,.45)}
+
+  /* 시트(저장/메뉴): 토대색 */
+  .sheet{background:var(--bg2);border-color:var(--line)}
+  .sheet input,.sheet textarea,.sheet select{background:var(--card);border-color:var(--line)}
+  .seg button.on{border-color:var(--accent);color:var(--accent);background:rgba(255,180,84,.1)}
+  .chip-pick button{background:var(--card2);border-color:var(--line);color:var(--txt)}
+  .chip-pick button.on{background:var(--accent2);color:#0c1426;border-color:var(--accent2)}
+  .save-btn{background:linear-gradient(135deg,var(--accent),#ff8a4c);color:#1a1207;font-weight:700}
+  .paste-btn{color:var(--sub);border-color:var(--line)}
+  .preview{background:var(--card);border-color:var(--line)}
+
+  /* 메뉴/통계/주제관리 표면 */
+  .menu-item{border-bottom-color:var(--line)}
+  .stat-card{background:var(--card);border-color:var(--line)}
+  .stat-card .n{color:var(--accent)}
+  .stat-row{border-bottom-color:var(--line)}
+  .stat-row .v{color:var(--accent)}
+  .topic-edit{background:var(--card);border-color:var(--line)}
+  .topic-edit .emo{background:var(--card2)}
+  .ghost-btn{background:var(--card);border-color:var(--line);color:var(--sub)}
+  .toast{background:var(--card2);border-color:var(--line)}
 </style>
 </head>
 <body>
@@ -176,7 +261,7 @@
   <div class="title-row">
     <div class="logo">🔖</div>
     <h1>링크 보관함<small class="ko">주제별로 모아 한눈에</small></h1>
-    <span class="ver" id="ver" onclick="openMenu()">v2.2</span>
+    <span class="ver" id="ver" onclick="openMenu()">v2.3</span>
   </div>
   <div class="search">
     <span class="ic">🔍</span>
@@ -240,7 +325,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v2.2';
+const VERSION='v2.3';
 const DB_KEY='linkvault_v2', TOPIC_KEY='linkvault_topics_v2';
 let items=[], topics=[], editId=null, curType='site', curTopic=null;
 let view={topic:'all', kind:'all', star:false, q:''};
@@ -382,7 +467,9 @@ function render(){
   });
   const wrap=$('list');
   if(!list.length){
-    wrap.innerHTML=`<div class="empty"><div class="big">📭</div><p class="ko">${items.length?'조건에 맞는 링크가 없어요.':'아직 저장된 링크가 없어요.<br>+ 버튼으로 첫 링크를 담아보세요.'}</p></div>`;
+    wrap.innerHTML=items.length
+      ? `<div class="empty"><div class="big">📭</div><p class="ko">조건에 맞는 링크가 없어요.</p></div>`
+      : `<div class="empty first"><div class="big">📭</div><p class="ko">아직 저장된 링크가<br>없어요</p><p class="sub ko">아래 ＋ 버튼을 눌러<br>첫 링크를 담아보세요</p></div>`;
     return;
   }
   // 종류별 섹션
