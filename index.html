@@ -300,8 +300,6 @@
   <div class="seg" id="typeSeg">
     <button data-t="video">🎬 영상</button>
     <button data-t="site">🔗 사이트</button>
-    <button data-t="image">🖼️ 이미지</button>
-    <button data-t="etc">📄 기타</button>
   </div>
 
   <label class="fl">주제</label>
@@ -336,6 +334,10 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 function load(){
   try{items=JSON.parse(localStorage.getItem(DB_KEY))||[]}catch{items=[]}
   try{topics=JSON.parse(localStorage.getItem(TOPIC_KEY))||[]}catch{topics=[]}
+  // 종류 단순화: 기존 '이미지'/'기타'로 저장된 항목은 '사이트'로 정리 (주제는 그대로 유지)
+  let changed=false;
+  items.forEach(it=>{ if(it.type!=='video'&&it.type!=='site'){ it.type='site'; changed=true; } });
+  if(changed) save();
   if(!topics.length){ // 기본 주제(예시) — 자유롭게 편집 가능
     topics=[{id:uid(),name:'가죽공예',emo:'🧵'},{id:uid(),name:'골프',emo:'⛳'},{id:uid(),name:'요리',emo:'🍳'},{id:uid(),name:'여행',emo:'✈️'}];
     saveTopics();
@@ -353,7 +355,7 @@ function extractUrl(raw){
 
 /* ---- URL 분석 ---- */
 function analyze(url){
-  let host='',type='etc',thumb='',title='',ytId='',favicon='';
+  let host='',type='site',thumb='',title='',ytId='',favicon='';
   try{const u=new URL(url);host=u.hostname.replace(/^www\./,'');
     favicon='https://www.google.com/s2/favicons?sz=128&domain='+u.hostname;
     let yt=null;
@@ -362,16 +364,17 @@ function analyze(url){
     if(host.includes('youtube.com')&&u.pathname.startsWith('/shorts/')) yt=u.pathname.split('/')[2];
     if(yt){ytId=yt;type='video';thumb=`https://img.youtube.com/vi/${yt}/hqdefault.jpg`;host='youtube.com';}
     else if(/vimeo\.com|tiktok\.com|twitch\.tv/.test(host)) type='video';
-    else if(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(u.pathname)){type='image';thumb=url;}
-    else if(/instagram\.com|pinterest\.|flickr\.com/.test(host)) type='image';
-    else type='site';
+    else{ type='site';
+      // 이미지 URL이면 썸네일은 살려두되 종류는 '사이트'로 둠
+      if(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(u.pathname)) thumb=url;
+    }
     const seg=u.pathname.split('/').filter(Boolean).pop()||'';
     title=decodeURIComponent(seg).replace(/[-_]+/g,' ').replace(/\.\w+$/,'').trim();
     if(title.length>60||/^[0-9a-f]{6,}$/i.test(title)) title='';
   }catch{}
   return {host,type,thumb,title,ytId,favicon};
 }
-const typeMeta={video:{i:'🎬',l:'영상',c:'video'},site:{i:'🔗',l:'사이트',c:'site'},image:{i:'🖼️',l:'이미지',c:'image'},etc:{i:'📄',l:'기타',c:'etc'}};
+const typeMeta={video:{i:'🎬',l:'영상',c:'video'},site:{i:'🔗',l:'사이트',c:'site'},image:{i:'🔗',l:'사이트',c:'site'},etc:{i:'🔗',l:'사이트',c:'site'}};
 
 /* ---- 메타데이터 (공개 프록시) ---- */
 async function fetchMeta(url){
@@ -418,7 +421,8 @@ function refreshPreview(){
 function paintSeg(){[...$('typeSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.t===curType));}
 function paintTopicPick(){
   $('topicPick').innerHTML=topics.map(t=>`<button data-id="${t.id}" class="${curTopic===t.id?'on':''}">${t.emo} ${esc(t.name)}</button>`).join('')
-    +`<button data-id="" class="${!curTopic?'on':''}">📥 미분류</button>`;
+    +`<button data-id="" class="${!curTopic?'on':''}">📥 미분류</button>`
+    +`<button data-id="__new__" style="border-style:dashed;color:var(--accent2)">＋ 새 주제</button>`;
 }
 
 /* ---- 시트 ---- */
@@ -473,17 +477,17 @@ function render(){
       : `<div class="empty first"><div class="big">📭</div><p class="ko">아직 저장된 링크가<br>없어요</p><p class="sub ko">아래 ＋ 버튼을 눌러<br>첫 링크를 담아보세요</p></div>`;
     return;
   }
-  // 종류별 섹션
-  const order=['video','site','image','etc'];
-  const byKind={};order.forEach(k=>byKind[k]=[]);
-  list.forEach(it=>{(byKind[it.type]||byKind.etc).push(it);});
+  // 종류별 섹션 (영상·사이트만)
+  const order=['video','site'];
+  const byKind={video:[],site:[]};
+  list.forEach(it=>{(it.type==='video'?byKind.video:byKind.site).push(it);});
   wrap.innerHTML=order.filter(k=>byKind[k].length).map(k=>{
     const m=typeMeta[k];
     return `<div class="sec-head"><span class="sec-bar ${k}"></span><span class="sec-title">${m.i} ${m.l}</span><span class="sec-cnt">${byKind[k].length}</span></div>`+byKind[k].map(card).join('');
   }).join('');
 }
 function card(it){
-  const m=typeMeta[it.type]||typeMeta.etc;
+  const m=typeMeta[it.type]||typeMeta.site;
   const tp=topicById(it.topic);
   let thumbInner;
   if(it.thumb){
@@ -522,7 +526,7 @@ function paintTopics(){
   $('topics').innerHTML=h;
 }
 function paintKinds(){
-  const kinds=[['all','전체'],['video','🎬 영상'],['site','🔗 사이트'],['image','🖼️ 이미지']];
+  const kinds=[['all','전체'],['video','🎬 영상'],['site','🔗 사이트']];
   $('kinds').innerHTML=kinds.map(([k,l])=>`<button class="kind ${view.kind===k?'on':''}" data-k="${k}" onclick="setKind('${k}')">${l}</button>`).join('');
 }
 window.setTopic=t=>{view.topic=t;view.star=false;render();};
@@ -655,7 +659,16 @@ $('saveBtn').onclick=doSave;
 $('f-url').addEventListener('input',refreshPreview);
 $('f-title').addEventListener('input',function(){this.dataset.touched='1';});
 $('typeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;curType=b.dataset.t;$('typeSeg').dataset.touched='1';paintSeg();});
-$('topicPick').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;curTopic=b.dataset.id||null;paintTopicPick();});
+$('topicPick').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.id==='__new__'){
+    const name=prompt('새 주제 이름을 입력하세요');
+    if(name&&name.trim()){
+      const t={id:uid(),name:name.trim(),emo:EMOJIS[Math.floor(Math.random()*EMOJIS.length)]};
+      topics.push(t);saveTopics();curTopic=t.id;paintTopicPick();toast('주제 추가됨 · 이모지는 주제 관리에서 변경 가능');
+    }
+    return;
+  }
+  curTopic=b.dataset.id||null;paintTopicPick();});
 $('pasteBtn').onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t){$('f-url').value=extractUrl(t);$('f-title').dataset.touched='';$('typeSeg').dataset.touched='';refreshPreview();}else toast('클립보드가 비어있어요');}catch{toast('붙여넣기 권한이 필요해요. 직접 붙여넣어 주세요');}};
 $('search').addEventListener('input',function(){view.q=this.value;$('clr').style.display=view.q?'block':'none';render();});
 $('clr').onclick=()=>{$('search').value='';view.q='';$('clr').style.display='none';render();};
