@@ -526,11 +526,11 @@ function paintTopics(){
   $('topics').innerHTML=h;
 }
 function paintKinds(){
-  const kinds=[['all','전체'],['video','🎬 영상'],['site','🔗 사이트']];
+  const kinds=[['video','🎬 영상'],['site','🔗 사이트']];
   $('kinds').innerHTML=kinds.map(([k,l])=>`<button class="kind ${view.kind===k?'on':''}" data-k="${k}" onclick="setKind('${k}')">${l}</button>`).join('');
 }
 window.setTopic=t=>{view.topic=t;view.star=false;render();};
-window.setKind=k=>{view.kind=k;render();};
+window.setKind=k=>{view.kind=(view.kind===k?'all':k);render();};
 window.toggleStarView=()=>{view.star=!view.star;render();};
 window.toggleStar=id=>{const it=items.find(i=>i.id===id);it.star=!it.star;save();render();};
 window.openLink=id=>{window.open(items.find(i=>i.id===id).url,'_blank','noopener');};
