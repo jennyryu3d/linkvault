@@ -844,7 +844,8 @@ window.disconnectSync=()=>{ if(!confirm('이 기기에서 동기화를 끌까요
 let _loopsStarted=false;
 function startSyncLoops(){
   if(_loopsStarted)return; _loopsStarted=true;
-  setInterval(()=>{ if(syncState.code && document.visibilityState==='visible') syncNow(); }, 45000);
+  // 주기 동기화: 사용량 절약 위해 2분 간격(저장·화면복귀·온라인 시에는 즉시 동기화됨)
+  setInterval(()=>{ if(syncState.code && document.visibilityState==='visible') syncNow(); }, 120000);
   document.addEventListener('visibilitychange',()=>{ if(syncState.code && document.visibilityState==='visible') syncNow(); });
   window.addEventListener('online',()=>{ if(syncState.code) syncNow(); });
 }
