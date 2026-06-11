@@ -271,6 +271,7 @@
   .tagbar button{background:transparent;border:1px solid var(--line);color:var(--sub);border-radius:8px;padding:5px 10px;font-size:.8rem;cursor:pointer}
   /* 동기화 패널 */
   .sync-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.02rem;letter-spacing:.04em;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 14px;color:var(--accent);display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0}
+  .sync-code .sc-btns{display:flex;gap:6px;flex:none}
   .sync-code button{background:transparent;border:1px solid var(--line);color:var(--sub);border-radius:8px;padding:6px 10px;font-size:.78rem;cursor:pointer;flex:none}
   .sync-status{font-size:.82rem;color:var(--sub);margin:4px 2px 12px}
 </style>
@@ -808,11 +809,12 @@ function openSyncPanel(){
   let h=`<h2>🔄 기기 간 동기화</h2>`;
   h+=`<p class="hint ko">비밀 <b>동기화 코드</b> 하나로 여러 기기를 묶어요. 다른 기기에서 같은 코드를 넣으면 링크·주제가 자동으로 합쳐지고 계속 동기화됩니다.</p>`;
   if(on){
-    h+=`<div class="sync-code">${esc(syncState.code)}<button onclick="copyCode()">📋 복사</button></div>`;
+    h+=`<div class="sync-code">${esc(syncState.code)}<span class="sc-btns"><button onclick="shareCode()">📤 보내기</button><button onclick="copyCode()" title="코드 복사">📋</button></span></div>`;
     h+=`<p class="sync-status" id="syncStatus"></p>`;
+    h+=`<button class="ghost-btn" onclick="shareCode()">📤 다른 기기로 보내기 (링크)</button>`;
     h+=`<button class="ghost-btn" onclick="syncNow({manual:true})">⟳ 지금 동기화</button>`;
     h+=`<button class="ghost-btn danger" onclick="disconnectSync()">이 기기에서 연결 해제</button>`;
-    h+=`<p class="hint ko" style="margin-top:12px">⚠️ 이 코드를 아는 사람은 누구나 보관함에 접근할 수 있어요. 안전하게 보관하세요.</p>`;
+    h+=`<p class="hint ko" style="margin-top:12px">📤 <b>보내기</b>로 카톡·메일·에어드롭 등에 보내면, 받은 기기에서 링크만 누르면 자동으로 연결돼요.<br>⚠️ 이 코드/링크를 아는 사람은 누구나 보관함에 접근할 수 있어요. 안전하게 보관하세요.</p>`;
   }else{
     h+=`<button class="save-btn" style="margin-top:4px" onclick="newCode()">＋ 새 동기화 코드 만들기</button>`;
     h+=`<p class="hint ko" style="margin-top:16px">이미 다른 기기에서 코드를 만들었다면 아래에 붙여넣으세요.</p>`;
@@ -822,9 +824,42 @@ function openSyncPanel(){
   openMenuRaw(h); updateSyncBadge('');
 }
 window.copyCode=async()=>{try{await navigator.clipboard.writeText(syncState.code);toast('코드를 복사했어요 📋');}catch{toast('복사 실패 — 길게 눌러 복사하세요');}};
+function syncLink(){ return location.origin+location.pathname+'?sync='+encodeURIComponent(syncState.code); }
+/* 보내기: 공유 시트(모바일) → 카톡·메일·에어드롭 등 / 미지원(PC)이면 링크 복사로 폴백 */
+window.shareCode=async()=>{
+  if(!syncState.code)return;
+  const link=syncLink();
+  const text='링크 보관함 동기화 코드: '+syncState.code+'\n아래 링크를 누르면 이 기기와 자동으로 연결돼요.';
+  if(navigator.share){
+    try{ await navigator.share({title:'링크 보관함 동기화', text, url:link}); return; }
+    catch(e){ if(e&&e.name==='AbortError') return; } // 사용자가 취소
+  }
+  try{ await navigator.clipboard.writeText(link); toast('연결 링크를 복사했어요. 다른 기기에 붙여넣어 여세요 🔗'); }
+  catch{ try{ await navigator.clipboard.writeText(syncState.code); toast('코드를 복사했어요 📋'); }catch{ toast('길게 눌러 코드를 복사하세요'); } }
+};
 window.newCode=()=>{ syncState.code=genCode(); syncState.rev=0; syncState.lastSync=0; syncState.err=''; saveSync(); openSyncPanel(); syncNow({manual:true,initial:true}); };
 window.connectCode=()=>{ const v=($('codeInput').value||'').trim(); if(v.length<8){toast('코드가 너무 짧아요 (8자 이상)');return;} syncState.code=v; syncState.rev=0; syncState.lastSync=0; syncState.err=''; saveSync(); openSyncPanel(); syncNow({manual:true,initial:true}); };
 window.disconnectSync=()=>{ if(!confirm('이 기기에서 동기화를 끌까요?\n저장된 링크·주제는 이 기기에 그대로 남아요.'))return; syncState={code:'',rev:0,lastSync:0,err:''}; saveSync(); openSyncPanel(); };
+
+let _loopsStarted=false;
+function startSyncLoops(){
+  if(_loopsStarted)return; _loopsStarted=true;
+  setInterval(()=>{ if(syncState.code && document.visibilityState==='visible') syncNow(); }, 45000);
+  document.addEventListener('visibilitychange',()=>{ if(syncState.code && document.visibilityState==='visible') syncNow(); });
+  window.addEventListener('online',()=>{ if(syncState.code) syncNow(); });
+}
+/* 받은 연결 링크(?sync=CODE) → 확인 후 이 기기를 연결 */
+function handleIncomingSyncCode(code){
+  if(code.length<8){ toast('받은 코드가 올바르지 않아요'); return; }
+  if(syncState.code===code){ toast('이미 이 코드로 연결돼 있어요 ✓'); if(syncState.code) syncNow(); return; }
+  const msg = syncState.code
+    ? '다른 기기에서 받은 동기화 코드예요:\n\n'+code+'\n\n이 기기를 이 코드로 연결할까요?\n(현재 '+syncState.code+' 연결은 해제됩니다)'
+    : '다른 기기에서 받은 동기화 코드예요:\n\n'+code+'\n\n이 기기를 연결하고 데이터를 합칠까요?';
+  if(confirm(msg)){
+    syncState.code=code; syncState.rev=0; syncState.lastSync=0; syncState.err=''; saveSync();
+    syncNow({manual:true,initial:true});
+  }
+}
 
 /* ---- util ---- */
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -861,13 +896,13 @@ $('clr').onclick=()=>{$('search').value='';view.q='';$('clr').style.display='non
   load();
   render();
   const verEl=$('ver'); if(verEl) verEl.textContent=VERSION;
-  // 기기 간 동기화: 시작 시 + 주기적 + 화면 복귀/온라인 시
-  if(syncState.code){
-    setTimeout(()=>syncNow(),400);
-    setInterval(()=>{ if(document.visibilityState==='visible') syncNow(); }, 45000);
-    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') syncNow(); });
-    window.addEventListener('online',()=>syncNow());
-  }
+  // 받은 '연결 링크'(?sync=CODE) 처리 — 누르면 이 기기를 자동 연결
+  const incomingCode=(p.get('sync')||'').trim();
+  if(incomingCode && history.replaceState) history.replaceState(null,'',location.pathname); // URL에서 코드 흔적 제거
+  // 기기 간 동기화: 주기/포커스/온라인 루프 시작(코드가 생기면 자동 활성)
+  startSyncLoops();
+  if(incomingCode) handleIncomingSyncCode(incomingCode);
+  else if(syncState.code) setTimeout(()=>syncNow(),400);
   if(u){
     openSheet(null);
     $('f-url').value=u;
