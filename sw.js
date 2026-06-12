@@ -1,5 +1,5 @@
 // 링크 보관함 - 최소 서비스워커 (PWA 설치 가능하게만 함)
-const CACHE='linkvault-v3.0';
+const CACHE='linkvault-v3.1';
 self.addEventListener('install',e=>{self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim());});
 self.addEventListener('fetch',e=>{
