@@ -52,6 +52,9 @@
   h1 small{display:block;font-size:.66rem;color:var(--dim);font-weight:500;letter-spacing:-.01em}
   .ver{margin-left:auto;font-size:.64rem;color:var(--accent);background:rgba(255,180,84,.12);padding:4px 9px;border-radius:20px;border:1px solid rgba(255,180,84,.3);font-weight:600;cursor:pointer}
   .menu-btn{background:var(--card);border:1px solid var(--line);color:var(--sub);width:34px;height:34px;border-radius:10px;font-size:1.1rem;cursor:pointer;flex:none}
+  #refreshBtn{font-size:1.25rem;line-height:1}
+  @keyframes spin360{to{transform:rotate(360deg)}}
+  .menu-btn.spin{animation:spin360 .8s linear infinite;color:var(--accent)}
 
   .search{position:relative;margin-bottom:9px}
   .search input{width:100%;padding:11px 38px 11px 38px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--txt);font-size:.9rem;font-family:inherit}
@@ -301,7 +304,8 @@
   <div class="title-row">
     <div class="logo"><img src="data:image/png;base64,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" alt="링크 보관함" /></div>
     <h1>링크 보관함<small class="ko">주제별로 모아 한눈에</small></h1>
-    <button class="menu-btn" id="settingsBtn" onclick="openMenu()" aria-label="설정" style="margin-left:auto">⚙️</button>
+    <button class="menu-btn" id="refreshBtn" onclick="forceUpdate()" aria-label="최신 버전으로 새로고침" title="최신 버전으로 업데이트" style="margin-left:auto">↻</button>
+    <button class="menu-btn" id="settingsBtn" onclick="openMenu()" aria-label="설정" style="margin-left:8px">⚙️</button>
   </div>
   <div class="search">
     <span class="ic">🔍</span>
@@ -829,6 +833,20 @@ function openAppInfo(){
 }
 window.copyAppUrl=async()=>{try{await navigator.clipboard.writeText(appUrl());toast('주소를 복사했어요 📋');}catch{toast('복사 실패 — 길게 눌러 복사하세요');}};
 
+/* ---- 강제 업데이트 (캐시·서비스워커 비우고 최신본 다시 받기) ---- */
+window.forceUpdate=async()=>{
+  if(navigator.onLine===false){ toast('오프라인이에요. 인터넷 연결 후 다시 시도해 주세요'); return; }
+  const btn=$('refreshBtn'); if(btn) btn.classList.add('spin');
+  toast('최신 버전으로 업데이트 중…');
+  try{
+    if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
+    if('serviceWorker' in navigator){ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.unregister().catch(()=>{}))); }
+  }catch(e){}
+  // 캐시(브라우저·CDN) 우회를 위해 1회용 파라미터 붙여 새로고침 (부팅 시 자동 제거)
+  const u=new URL(location.href); u.searchParams.set('_r', Date.now());
+  location.replace(u.href);
+};
+
 /* ---- 백업 / 복원 ---- */
 function backupMessage(){
   return `📚 링크 보관함 백업 파일이에요!
@@ -1108,7 +1126,8 @@ $('clr').onclick=()=>{$('search').value='';view.q='';$('clr').style.display='non
   const verEl=$('ver'); if(verEl) verEl.textContent=VERSION;
   // 받은 '연결 링크'(?sync=CODE) 처리 — 누르면 이 기기를 자동 연결
   const incomingCode=(p.get('sync')||'').trim();
-  if(incomingCode && history.replaceState) history.replaceState(null,'',location.pathname); // URL에서 코드 흔적 제거
+  // 강제 새로고침용 1회 파라미터(_r) 또는 동기화 코드 흔적을 URL에서 제거
+  if((incomingCode||p.has('_r')) && history.replaceState){ const cu=new URL(location.href); cu.searchParams.delete('_r'); if(incomingCode) cu.searchParams.delete('sync'); history.replaceState(null,'',cu.pathname+cu.search+cu.hash); }
   // 기기 간 동기화: 주기/포커스/온라인 루프 시작(코드가 생기면 자동 활성)
   startSyncLoops();
   if(incomingCode) handleIncomingSyncCode(incomingCode);
