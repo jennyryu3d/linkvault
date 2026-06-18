@@ -274,6 +274,23 @@
   .sync-code .sc-btns{display:flex;gap:6px;flex:none}
   .sync-code button{background:transparent;border:1px solid var(--line);color:var(--sub);border-radius:8px;padding:6px 10px;font-size:.78rem;cursor:pointer;flex:none}
   .sync-status{font-size:.82rem;color:var(--sub);margin:4px 2px 12px}
+
+  /* ===== 앱 테마 팝업(모달) ===== */
+  .modal-bg{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.2s}
+  .modal-bg.on{opacity:1;pointer-events:auto}
+  .modal{position:fixed;left:50%;top:50%;z-index:71;transform:translate(-50%,-46%) scale(.96);opacity:0;pointer-events:none;width:min(340px,86vw);background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:22px 20px 18px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.55);transition:.22s cubic-bezier(.32,.72,0,1)}
+  .modal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+  .modal-logo{width:48px;height:48px;border-radius:14px;margin:0 auto 12px;overflow:hidden;box-shadow:0 6px 16px rgba(255,138,76,.35)}
+  .modal-logo img{width:100%;height:100%;object-fit:cover;display:block}
+  .modal-title{font-size:1.04rem;font-weight:800;margin-bottom:8px;letter-spacing:-.02em;color:var(--txt)}
+  .modal-msg{font-size:.86rem;color:var(--sub);line-height:1.55;white-space:pre-line;margin-bottom:16px;word-break:break-word}
+  .modal-input{width:100%;padding:11px 13px;border-radius:11px;background:var(--card);border:1px solid var(--line);color:var(--txt);font-size:.92rem;font-family:inherit;margin-bottom:14px}
+  .modal-btns{display:flex;gap:9px}
+  .modal-btn{flex:1;padding:12px;border-radius:12px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;font-family:inherit;transition:.12s}
+  .modal-btn:active{transform:scale(.97)}
+  .modal-btn.cancel{background:var(--card);border:1px solid var(--line);color:var(--sub)}
+  .modal-btn.ok{background:linear-gradient(135deg,var(--accent),#ff8a4c);color:#1a1207}
+  .modal-btn.ok.danger{background:#ff5a5a;color:#2a0808}
 </style>
 </head>
 <body>
@@ -281,7 +298,7 @@
   <div class="title-row">
     <div class="logo"><img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCADAAMADASIAAhEBAxEB/8QAHQABAAIDAQEBAQAAAAAAAAAAAAIHAQYIBAUDCf/EAEQQAAEEAQEEAwgRBAEFAAAAAAEAAgMRBAUGBxIhCBMxFSI3QVFVYdMUFxgyVnF0dYOEk6Sys7TC0TZFkZQWM0KBobH/xAAbAQEAAwADAQAAAAAAAAAAAAAABAUHAQIDBv/EADMRAAIBAwEDCQcFAQAAAAAAAAABAgMEEQUhMbESNEFRU2FxkfATFBVScoHBIiRDktGh/9oADAMBAAIRAxEAPwDk1ERdzqEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBEXt0fSdV1nJdi6RpmbqM7WGR0WLA6V4aCAXENBNWQL9IXDkorLOUm3hHiRb5pu5/eTqGFHmQbLZLI5LpuRNFBIKJHNkjmuHZ4wLHPsK9HtJbz/AIM/f8b1iivULRPDqx/sv9JKsrlrKpy8mV2isT2kt5/wZ+/43rE9pLef8Gfv+N6xcfEbTtY/2X+j3G57OXkyu0Vie0lvP+DP3/G9YntJbz/gz9/xvWJ8RtO1j/Zf6Pcbns5eTK7RWJ7SW8/4M/f8b1i/PK3MbzMbGlyJNl5HMiYXuEeVBI8gCzTWvLnHyAAk+JFqFo/5Y/2X+j3K57OXkyv0X0da0LXNE6ruzo2o6b13F1XsvFfD1lVfDxAXVi68oXzlLjJSWYvKI8ouLw0ERFydQiIgCIiAIiIAiIgC9uh6VqOt6tjaTpOJJl5uS/giijHNx7fiAAsknkACTQCaHpWo63q2NpOk4kmXm5L+CKKMc3H/AOAAWSTyABJoBdg7m92mn7AaSXvMeXrmSwDLywOTR29VHfMMBrn2uIs1TWtqtU1SnYU+uT3L8vuLLTtOneT6ore/wu80bdv0e9OgxoNQ22nky8l7A52mwP4IoiQ62vkaeJ5FtPeloBBFvHNXlpuDg6ZhR4Om4WPhYsd9XBjxNjjZZJNNaABZJPxlfvaWs/u764vJcqrLPd0LwR9rbWVG1jinHHf0+ZK0tRtLUPBKwStLUbS0wMErS1G0tMDBK0tRtLTAwRyoIMrGlxcqGOeCZhjlikaHMe0ii0g8iCORBVO7w9wOzutddnbMS9w893E/qKL8WR3fGuHtjslotttaByYrktLUq1vK9rLlUpY9dRHuLSlcR5NSOTgfarZ3Wtl9WdpWvafJg5YY2TgcQ4OaexzXNJa4dosE8wR2ghfJXce83YbSNvNAOm6k3qsiK3YeYxtyY7z4x5WmhxN7CAOwgEcbbZ7M6vsjr8+i61j9TkRd81zecczDdSMPjaaPpBBBAIIH3+k6vC+hiWya3r8r1sPi9S0ydnLK2xe5/hnxURFcFUEREAREQBEXt0LTp9Y1vA0jGfGyfOyY8aJ0hIaHPcGgkgE1Z8QK4k1FZZyk28I6G6KOxUEGky7a5+NG/JyXuh05zgCYo222R7TZoudbOYBAYaNPKvm15dMwsXTNNxdOwouqxcWFkELOIu4WNaGtFkkmgBzPNei1ll/dyu68qsund3LoNIsrWNrRjTXRv8eklaWo2lqGSiVpajaWgJWlqNpaAlaWo2loCVpajaWgJWlqNpaAlaqfpLbFQbQ7FTa9i40fdXSGdd1oAD5MYWZGEkgU0EvF2e9IaLeVa1pakWtxO2rRqw3r1j7nhc28bilKnLcz+eqLZt6WgM2Y3ha1okTY2QQZJdjsje5wZE8B8bbdzJDHNBu+YPM9q1larSqRqwU47ms+Zm1SDpzcJb1sCIi7nQIiIAt63BYWLn73tn4MuLrI2TPnaOIinxxPkYeXkc1prsNc+S0VWF0c/DLoP1j9PKol+2rWq18r4MlWKTuaafzLidjX6Uv0rFpayw0vBm/Sl+lYtLQYM36Vs+7jGxsvXJo8rHinYMZzg2RgcAeJvOj8a1e1tm6w3tBP8kd+NisNKipXlNPrIOptxtKjXUb53G0fzVg/67P4TuNo/mrB/wBdn8L3ItF93pfKvJGf+3q/M/M8PcbR/NWD/rs/hO42j+asH/XZ/C9yJ7vS+VeSHt6vzPzK+3m4eHh9z/YmLBj8fW8XVRhvFXBV18ZWl36VvW9k13M+l/YtEtZ/rcVG+morC2cEfd6M3Kyg338WZv0pfpWLS1VFngzfpS/SsWloMHKfStwsXF3nxT48fBJmabFPkO4ieN4c+MHn2d7GwUKHLykqpFcfS357x9P+aI/zplTi03SW3ZU89RnWqJK8qY6wiIrErwiIgCsLo6eGTQvrH6eVV6rB6Ovhk0L6x+nlUTUOaVfplwZLsOdUvqXFHYiKKLLTTcEkUUQYJLbd1f8AUM/yR342LUFt26r+oZ/kjvxsVjpPPafiV+q8zqeBZiIi0kzkIiIDQ97f9s+l/YtDW973P7Z9L+xaEs813n9T7cEaBofMYffiySKKKoLbBJFFEGDl7pbeEfT/AJoj/OmVOq4elr4RtP8AmiP86ZU8tM0jmVPwM41bnlTxCIisSuCIiAKwejt4Y9C+sfp5VXysDo7+GLQvrH6eVRNQ5pV+mXBkzT+d0vqXFHYVpajaWsuwafglaWo2lpgYJWtu3Um9osj5I78bFp9rb91H9RZHyR342Kx0lfvafiV2rL9nU8CzkRfN1/WsHRMVs+a91vNMjYAXv8tD0eM/yFotSpClFzm8JGdU6c6slCCy2fSRfG2Z2jwddjcIOKLIjAMkLyLHpHlF8r/yBYX2VxRrQrQU6bymdq1GdGbhUWGjQd7pruX9L+xaFa33e/8A2v6b9i0C18Brq/f1PtwR97oa/YU/vxZK0tRtLVTgt8ErS1G0tMDBzB0s+e8bT/miP86ZU8rg6WXhG0/5oj/OmVPrS9I5lT8DNdW57U8QiIrErgiIgCsDo7+GLQvrH6eVV+t73ATw4+93QpMiaOJhfMwOe4NBc6GRrW2fGXEADxkgKJfrNrV+l8GTNP53S+pcUdiIoWlrMMGo4JooWlpgYJrb90/9RZHyR342LTbXs0vU8vTHzvwpOqkmhMJePfNaSCS0+I8u30+XmpVlWjQuI1ZbkRb63lcW8qUd7LS2t2sxNF4sWIeyM4strB72Mns4z/7oc/isFVZqGdl6hknIzciSeU/9zzdCyaHkHM8hyXmlkfLI6WV7nveS5znGy4ntJPlUbXvqGpVb2f6tkehet7I+naXSsofp2y6X63I/fHnmxpmzY80kMrb4XxuLXDlXIhWXsftlBqPU4Gonqs53etkoBkp8XxOPk7OXLtAVW2lrpY6hWsp5hu6V0P11ne/02jew5M1t6H0r11Fhb4P7X9N+xaAvXqOr52oYmPj5s7pxjl5Y95Jf31WCfGOXL4/irw2uNRuY3VzKrFbHjgkc6baytbaNGW1rPFsmihaWoWCdgmihaWmBg5j6WPhFwPmiP86ZU+rb6Vc8M28jFjimjkfDpcTJWtcCY3dZK7hd5DwuaaPiIPjVSLStJWLKn4GZ6vz2p4hERWBXBERAF9DZvUu420Wm6v1PX+wcuLJ6ri4ePgeHcN0auquivnouJRUk0+k7Rk4tSW9He+NkQZONFk400c0ErA+OSNwc17SLDgRyII52v0tVB0Zdru6+y0mzmbPxZulf9HjfbpMcnvatxJ4DbeQAa0xhW9azC7tpW1aVKXQapZ3MbqhGrHp9MzaWsWlqNgk4M2lrFpaYGDNpaxaWmBgzaWsWlpgYM2lrFpaYGDNpaxaWmBgzaWsWtA37bX/8U2Fn9iz9XqeoXi4nC+nssd/IKcHDhb2OF05zL7V7UKEq9SNOO9njcVo29KVWe5I5w3vazDr28rXNTxhH1Dsjqo3RyiRsjYmiMPDhyIcGcX/ntPatTRFp9KmqVOMI7kkvIyqtUdWpKpLe235hEReh5hERAEREB9TZXXc/ZraDD1zTHRjLxXlzOsZxNcCC1zSPIWkjlR58iDzXXu7nbXStt9CGoaeeqyI6bl4jnW/HefEfK00ad46PYQQOLl9fZDaPVdlddh1jR8jqsiPk5rubJWHtY8eNpof4BBBAIqdV0uN7DK2TW5/h+thc6Rq0rCeJbYPevyvW07gtLVXbvt9GzevY8GLrc8ejapwASdceHGkdTiSyQmmim3T65uABd2q0LXwlxa1bafIqxw/W40G2uqN1Dl0pZXrf1GbS1i0teBIwZtLWLS0GDNpaxaWgwZtLWLS0GDNpaxa0Lbzexspsr1uN7J7p6ky2+xMRwdwOHEKkf71lObRHNwsHhK9aNvUry5NOOWeNevSt48urJJGz7X7SaVsroU2saxkdVjx8mtbzfK89jGDxuNH/AASSACRyFvF2uz9tdpZNZz444QGCHHgZzEMQJIbfa424kk9pJqhQDb3bPXNtdUZnazLGBEzggx4QWwwjlfCCSbJFkkknkOwADXF9zpOkxs48ue2b/wCdyPgNY1iV7LkU9kF/3vf4QREV0UQREQBERAEREAREQBbHsztztbs2xsWja9l48DWFjIHOEsTAXcR4Y3gtBvnYF8z5StcRdKlOFRcmaTXeelOrOlLlQbT7thaun7+dt8XDZBPFpGdI27nnxnB77JPMMe1vLs5Adnl5r9/dAbZebNA+wm9aqjRQ3pVm3n2aJy1i+Sx7Vlue6A2y82aB9hN61PdAbZebNA+wm9aqjRcfCrPs0c/Gb7tWW57oDbLzZoH2E3rU90Btl5s0D7Cb1qqNE+FWfZofGb7tWW57oDbLzZoH2E3rV+eTv821lx5Yo8PRIHvYWtljx5C5hI98OKQix28wR5QVU6ItKs1/Gg9Yvn/KzatoN4u22vY/sbUtost0HA9jo4eGBsjXCnNeIw0PBAqnX2nylaqiKZTpU6SxCKS7thBq1qlV8qpJt97yERF6HkEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQH//2Q==" alt="링크 보관함" /></div>
     <h1>링크 보관함<small class="ko">주제별로 모아 한눈에</small></h1>
-    <span class="ver" id="ver" onclick="openMenu()">v3.3</span>
+    <span class="ver" id="ver" onclick="openMenu()">v3.4</span>
     <button class="menu-btn" id="settingsBtn" onclick="openMenu()" aria-label="설정" style="margin-left:8px">⚙️</button>
   </div>
   <div class="search">
@@ -343,8 +360,21 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- 앱 테마 팝업(확인/입력) -->
+<div class="modal-bg" id="modalBg"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <div class="modal-logo" id="modalLogo"></div>
+  <h3 class="modal-title" id="modalTitle">링크 보관함</h3>
+  <p class="modal-msg" id="modalMsg"></p>
+  <input class="modal-input" id="modalInput" style="display:none" autocomplete="off">
+  <div class="modal-btns">
+    <button class="modal-btn cancel" id="modalCancel">취소</button>
+    <button class="modal-btn ok" id="modalOk">확인</button>
+  </div>
+</div>
+
 <script>
-const VERSION='v3.3';
+const VERSION='v3.4';
 const DB_KEY='linkvault_v2', TOPIC_KEY='linkvault_topics_v2', TOMB_KEY='linkvault_tomb_v2', SYNC_KEY='linkvault_sync_v2';
 // 동기화 서버(/api/sync)는 Cloudflare에만 있어요. github.io 등 다른 주소에서 열어도
 // 같은 서버로 동기화되도록, Cloudflare(.pages.dev)가 아니면 절대주소로 호출합니다. (서버 CORS 허용)
@@ -481,13 +511,13 @@ function openSheet(it){
 }
 function closeSheet(){$('bg').classList.remove('on');$('sheet').classList.remove('on');try{sessionStorage.removeItem('pendingShare');}catch{}}
 
-function doSave(){
+async function doSave(){
   const url=$('f-url').value.trim();
   if(!url){toast('URL을 입력해주세요');return;}
   // 중복 링크 감지: 새 항목 저장 시 같은 URL이 이미 있으면 확인
   if(!editId){
     const dup=items.find(i=>normUrl(i.url)===normUrl(url));
-    if(dup && !confirm('이미 저장된 링크예요:\n\n「'+dup.title+'」\n\n그래도 새로 추가할까요?')){
+    if(dup && !(await uiConfirm('「'+dup.title+'」\n\n이미 저장된 링크예요. 그래도 새로 추가할까요?',{ok:'새로 추가',cancel:'기존으로 이동'}))){
       closeSheet(); jumpToItem(dup.id); return;
     }
   }
@@ -622,7 +652,7 @@ window.shareItem=async id=>{
   }
 };
 window.edit=id=>openSheet(items.find(i=>i.id===id));
-window.del=id=>{if(confirm('이 링크를 삭제할까요?')){items=items.filter(i=>i.id!==id);tomb[id]=Date.now();saveTomb();save();render();toast('삭제했어요');}};
+window.del=async id=>{if(await uiConfirm('이 링크를 삭제할까요?',{ok:'삭제',danger:true})){items=items.filter(i=>i.id!==id);tomb[id]=Date.now();saveTomb();save();render();toast('삭제했어요');}};
 
 /* ---- 콘텐츠 이동 ---- */
 window.moveItem=id=>{
@@ -666,9 +696,9 @@ function openTopicManager(){
 window.cycleEmo=id=>{const t=topicById(id);const i=EMOJIS.indexOf(t.emo);t.emo=EMOJIS[(i+1)%EMOJIS.length];t.updated=Date.now();saveTopics();openTopicManager();render();};
 window.renameTopic=(id,v)=>{const t=topicById(id);t.name=v.trim()||t.name;t.updated=Date.now();saveTopics();render();};
 window.addTopic=()=>{topics.push({id:uid(),name:'새 주제',emo:EMOJIS[Math.floor(Math.random()*EMOJIS.length)],updated:Date.now()});saveTopics();openTopicManager();render();};
-window.delTopic=id=>{
+window.delTopic=async id=>{
   const n=items.filter(i=>i.topic===id).length;
-  if(confirm(`이 주제를 삭제할까요?${n?`\n안에 있는 ${n}개 링크는 '미분류'로 이동돼요.`:''}`)){
+  if(await uiConfirm(`이 주제를 삭제할까요?${n?`\n안에 있는 ${n}개 링크는 '미분류'로 이동돼요.`:''}`,{ok:'삭제',danger:true})){
     items.forEach(i=>{if(i.topic===id){i.topic='';i.updated=Date.now();}});
     topics=topics.filter(t=>t.id!==id);
     tomb[id]=Date.now();saveTomb();
@@ -706,10 +736,10 @@ function openCleanup(){
   }
   openMenuRaw(h);
 }
-window.runCleanup=()=>{
+window.runCleanup=async()=>{
   const {groups, dupUrlGroups}=scanDuplicates();
   if(!groups.length && !dupUrlGroups.length){ toast('정리할 중복이 없어요 ✓'); return; }
-  if(!confirm('중복 주제와 링크를 정리할까요?\n• 같은 이름 주제는 하나로 합쳐져요(링크 보존)\n• 똑같은 링크는 1개만 남아요\n되돌릴 수 없어요 — 백업을 권장해요.')) return;
+  if(!(await uiConfirm('중복 주제와 링크를 정리할까요?\n• 같은 이름 주제는 하나로 합쳐져요(링크 보존)\n• 똑같은 링크는 1개만 남아요\n되돌릴 수 없어요 — 백업을 권장해요.',{ok:'정리 실행'}))) return;
   const now=Date.now();
   const cnt=t=>items.filter(i=>i.topic===t.id).length;
   let tMerged=0, moved=0, lRemoved=0;
@@ -965,7 +995,7 @@ window.shareCode=async()=>{
 };
 window.newCode=()=>{ syncState.code=genCode(); syncState.rev=0; syncState.lastSync=0; syncState.err=''; saveSync(); openSyncPanel(); syncNow({manual:true,initial:true}); };
 window.connectCode=()=>{ const v=($('codeInput').value||'').trim(); if(v.length<8){toast('코드가 너무 짧아요 (8자 이상)');return;} syncState.code=v; syncState.rev=0; syncState.lastSync=0; syncState.err=''; saveSync(); openSyncPanel(); syncNow({manual:true,initial:true}); };
-window.disconnectSync=()=>{ if(!confirm('이 기기에서 동기화를 끌까요?\n저장된 링크·주제는 이 기기에 그대로 남아요.'))return; syncState={code:'',rev:0,lastSync:0,err:''}; saveSync(); openSyncPanel(); };
+window.disconnectSync=async()=>{ if(!(await uiConfirm('이 기기에서 동기화를 끌까요?\n저장된 링크·주제는 이 기기에 그대로 남아요.',{ok:'끄기',danger:true})))return; syncState={code:'',rev:0,lastSync:0,err:''}; saveSync(); openSyncPanel(); };
 
 let _loopsStarted=false;
 function startSyncLoops(){
@@ -976,14 +1006,14 @@ function startSyncLoops(){
   window.addEventListener('online',()=>{ if(syncState.code) syncNow(); });
 }
 /* 받은 연결 링크(?sync=CODE) → 확인 후 이 기기를 연결 */
-function handleIncomingSyncCode(code){
+async function handleIncomingSyncCode(code){
   if(code.length<8){ toast('받은 코드가 올바르지 않아요'); return; }
   if(syncState.code===code){ toast('이미 이 코드로 연결돼 있어요 ✓'); if(syncState.code) syncNow(); return; }
   const keep = items.length ? '\n(이 기기의 링크 '+items.length+'개는 그대로 유지되고 합쳐져요)' : '';
   const msg = syncState.code
     ? '다른 기기에서 받은 동기화 코드예요:\n\n'+code+'\n\n이 기기를 이 코드로 연결할까요?'+keep+'\n(현재 '+syncState.code+' 연결은 해제됩니다)'
     : '다른 기기에서 받은 동기화 코드예요:\n\n'+code+'\n\n이 기기를 연결하고 데이터를 합칠까요?'+keep;
-  if(confirm(msg)){
+  if(await uiConfirm(msg,{ok:'연결'})){
     syncState.code=code; syncState.rev=0; syncState.lastSync=0; syncState.err=''; saveSync();
     syncNow({manual:true,initial:true});
   }
@@ -993,6 +1023,34 @@ function handleIncomingSyncCode(code){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2000);}
 
+/* ---- 앱 테마 팝업 (네이티브 confirm/prompt 대체) ---- */
+let _modalResolve=null;
+function _ensureModalLogo(){ const el=$('modalLogo'); if(el.hasChildNodes())return; const lg=document.querySelector('header .logo img'); if(lg){const im=new Image(); im.src=lg.src; im.alt=''; el.appendChild(im);} }
+function _closeModal(val){ $('modal').classList.remove('on'); $('modalBg').classList.remove('on'); const r=_modalResolve; _modalResolve=null; if(r) r(val); }
+function _openModal({title,message,ok,cancel,danger,input,def,placeholder}){
+  return new Promise(resolve=>{
+    _ensureModalLogo();
+    $('modalTitle').textContent=title||'링크 보관함';
+    $('modalMsg').textContent=message||'';
+    const inp=$('modalInput');
+    if(input){ inp.style.display=''; inp.value=def||''; inp.placeholder=placeholder||''; } else { inp.style.display='none'; }
+    $('modalCancel').style.display=(cancel===false)?'none':'';
+    $('modalCancel').textContent=(typeof cancel==='string')?cancel:'취소';
+    $('modalOk').textContent=ok||'확인';
+    $('modalOk').className='modal-btn ok'+(danger?' danger':'');
+    _modalResolve=(okPressed)=> resolve(input ? (okPressed?inp.value:null) : !!okPressed);
+    $('modalBg').classList.add('on'); $('modal').classList.add('on');
+    setTimeout(()=>{ (input?inp:$('modalOk')).focus(); },60);
+  });
+}
+function uiConfirm(message,opts={}){ return _openModal({message, ...opts}); }
+function uiAlert(message,opts={}){ return _openModal({message, cancel:false, ...opts}); }
+function uiPrompt(message,def='',opts={}){ return _openModal({message, input:true, def, ...opts}); }
+$('modalOk').onclick=()=>_closeModal(true);
+$('modalCancel').onclick=()=>_closeModal(false);
+$('modalBg').onclick=()=>_closeModal(false);
+$('modalInput').addEventListener('keydown',e=>{ if(e.key==='Enter')_closeModal(true); else if(e.key==='Escape')_closeModal(false); });
+
 /* ---- events ---- */
 $('fab').onclick=()=>openSheet(null);
 $('bg').onclick=closeSheet;
@@ -1001,9 +1059,9 @@ $('saveBtn').onclick=doSave;
 $('f-url').addEventListener('input',refreshPreview);
 $('f-title').addEventListener('input',function(){this.dataset.touched='1';});
 $('typeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;curType=b.dataset.t;$('typeSeg').dataset.touched='1';paintSeg();});
-$('topicPick').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+$('topicPick').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.id==='__new__'){
-    const name=prompt('새 주제 이름을 입력하세요');
+    const name=await uiPrompt('새 주제 이름을 입력하세요','',{ok:'추가',placeholder:'예: 디자인'});
     if(name&&name.trim()){
       const t={id:uid(),name:name.trim(),emo:EMOJIS[Math.floor(Math.random()*EMOJIS.length)],updated:Date.now()};
       topics.push(t);saveTopics();curTopic=t.id;paintTopicPick();toast('주제 추가됨 · 이모지는 주제 관리에서 변경 가능');
